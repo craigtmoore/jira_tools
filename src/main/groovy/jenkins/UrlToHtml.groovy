@@ -11,7 +11,8 @@ import java.awt.datatransfer.Transferable
 import java.awt.datatransfer.UnsupportedFlavorException
 
 /**
- * Class for taking in a Jenkins URL can converting into an html format that can be pasted into Jira or Teams.
+ * Class for taking in a Jenkins URL can converting into html format and copying it to the clipboard which can
+ * then be pasted into Jira or Teams.
  */
 class UrlToHtml {
 

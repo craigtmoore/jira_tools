@@ -9,6 +9,10 @@ import java.awt.Toolkit
 import java.awt.datatransfer.Clipboard
 import java.awt.datatransfer.StringSelection
 
+/**
+ * Class for taking too lists of jira issues merging them together, removing duplicates, and returning a jira query for
+ * the list of issues which is copied to the clipboard
+ */
 class UpdateIssueLists {
 
     public static final Logger LOG = LoggerFactory.getLogger(UpdateIssueLists.class)
