@@ -1,0 +1,26 @@
+plugins {
+    id 'groovy'
+    id 'com.github.johnrengelman.shadow' version '5.1.0'
+}
+
+group 'com.agfa.tools'
+version '0.0.0-SNAPSHOT'
+
+repositories {
+    maven {
+        url = uri('http://ei-nexus.agfahealthcare.com/repository/maven-public/')
+    }
+}
+
+dependencies {
+    compile 'org.codehaus.groovy:groovy-all:2.4.5'
+}
+
+
+shadowJar {
+    archiveBaseName = "jira-tools"
+    archiveClassifier = null
+    archiveVersion = null
+    from sourceSets.test.output
+    mergeServiceFiles()
+}
