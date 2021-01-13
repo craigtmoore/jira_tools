@@ -19,7 +19,12 @@ dependencies {
 
 }
 
-task copyJar(type: Copy) {
+shadowJar {
+    from sourceSets.test.output
+    mergeServiceFiles()
+}
+
+task copyJar(type: Copy, dependsOn: [shadowJar]) {
     def fileName = "jira_tools-$version-all.jar"
     def filePath = "$buildDir/libs/" + fileName
     from filePath
@@ -27,10 +32,3 @@ task copyJar(type: Copy) {
 
     rename fileName, "jira_tools.jar"
 }
-
-shadowJar {
-    from sourceSets.test.output
-    mergeServiceFiles()
-}
-
-shadowJar.finalizedBy copyJar
