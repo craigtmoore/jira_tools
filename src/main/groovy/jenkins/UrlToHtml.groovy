@@ -78,7 +78,7 @@ class UrlToHtml {
 
             if (foundJob || numJobs == maxJobNumber) {
                 def displayText = it.replace("%20", " ")
-                if (displayText =~ /[0-9]+/ && numJobs > 1) {
+                if (displayText =~ /^[0-9]+$/ && numJobs > 1) {
                     displayText = "#" + displayText
                 }
                 def link = "<a href=\"${runningUrl}\">${displayText}</a>"
