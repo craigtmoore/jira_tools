@@ -48,9 +48,15 @@ class UrlToHtml {
 
         LOG.debug("getHtml(url='$url')")
 
-        def addressArray = url.split("/")
+        def cleanUrl = url
+                .replace("//", "/")
+                .replace("http:/", "http://")
 
-        def maxJobNumber = url.contains("ei-master") ? 2 : 3
+        LOG.debug("cleanUrl=$cleanUrl")
+
+        def addressArray = cleanUrl.split("/")
+
+        def maxJobNumber = cleanUrl.contains("ei-master") ? 2 : 3
 
         LOG.debug("maxJobNumber=$maxJobNumber")
 
