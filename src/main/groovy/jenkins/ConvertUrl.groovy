@@ -7,21 +7,26 @@ import org.slf4j.LoggerFactory
 
 import java.awt.Toolkit
 import java.awt.datatransfer.DataFlavor
+import java.awt.datatransfer.StringSelection
 import java.awt.datatransfer.Transferable
 import java.awt.datatransfer.UnsupportedFlavorException
 
 /**
- * Class for taking in a Jenkins URL can converting into html format and copying it to the clipboard which can
- * then be pasted into Jira or Teams.
+ * Class for converting a Jenkins URL into html (or markdown) format and copying it to the clipboard which can
+ * then be pasted into Jira or Teams or Bitbucket/GitHub.
  */
-class UrlToHtml {
+class ConvertUrl {
 
-    public static final Logger LOG = LoggerFactory.getLogger(UrlToHtml.class)
+    public static final Logger LOG = LoggerFactory.getLogger(ConvertUrl.class)
 
     static void main(String[] args) {
 
-        def clazz = UrlToHtml.class
+        def clazz = ConvertUrl.class
+
         def cli = Util.getCliBuilder("${clazz.name} [options] url")
+
+        cli.m(longOpt: 'markdown', 'Convert to Markdown format')
+
         def options = cli.parse(args)
 
         if (options.h || !options.arguments()) {
@@ -33,40 +38,43 @@ class UrlToHtml {
             Util.setLogLevel(clazz, Level.DEBUG)
         }
 
-        def htmlText = getHtml(options.arguments()[0])
-
-        def transferable = new HtmlInputStreamTransferable(htmlText)
-
-        Toolkit.defaultToolkit.systemClipboard.setContents(transferable, null)
-
-        LOG.info("Copied HTML to clipboard")
-
-    }
-
-
-    static getHtml(String url) {
-
-        LOG.debug("getHtml(url='$url')")
-
-        def cleanUrl = url
+        def url = options.arguments()[0]
                 .replace("//", "/")
                 .replace("http:/", "http://")
 
-        LOG.debug("cleanUrl=$cleanUrl")
+        LOG.debug("cleanUrl=$url")
 
-        def addressArray = cleanUrl.split("/")
+        if (options.markdown) {
 
-        def maxJobNumber = cleanUrl.contains("ei-master") ? 2 : 3
+            def markdownText = getText(url, options.markdown)
 
-        LOG.debug("maxJobNumber=$maxJobNumber")
+            Toolkit.defaultToolkit.systemClipboard.setContents(new StringSelection(markdownText), null)
 
-        boolean foundJob = false
+            LOG.info("Copied Markdown to clipboard")
 
-        int numJobs = 0
+        } else {
+
+            def htmlText = getText(url)
+
+            Toolkit.defaultToolkit.systemClipboard.setContents(new HtmlInputStreamTransferable(htmlText), null)
+
+            LOG.info("Copied HTML to clipboard")
+
+        }
+    }
+
+
+    static getText(String url, boolean isMarkdown = false) {
+
+        LOG.debug("getHtml(url='$url')")
+
+        def addressArray = url.split("/")
 
         def htmlFormat = ""
 
         def runningUrl = ""
+
+        def foundJob = false
 
         addressArray.each {
 
@@ -76,22 +84,29 @@ class UrlToHtml {
                 runningUrl = it
             }
 
-            if (foundJob || numJobs == maxJobNumber) {
+            if (foundJob && "job" != it && "junit" != it) {
+
                 def displayText = it.replace("%20", " ")
-                if (displayText =~ /^[0-9]+$/ && numJobs > 1) {
+
+                if (displayText =~ /^[0-9]+$/) {
                     displayText = "#" + displayText
                 }
-                def link = "<a href=\"${runningUrl}\">${displayText}</a>"
+
+                def link
+                if (isMarkdown) {
+                    link = "[$displayText](${runningUrl})"
+                } else {
+                    link = "<a href=\"${runningUrl}\">${displayText}</a>"
+                }
+
                 if (htmlFormat) {
                     link = " > $link"
                 }
-                htmlFormat += "$link"
-                foundJob = false
-            }
 
-            if ("job".equals(it)) {
+                htmlFormat += "$link"
+
+            } else if ("job" == it) {
                 foundJob = true
-                numJobs += 1
             }
         }
 
@@ -112,7 +127,7 @@ class UrlToHtml {
         }
 
         boolean isDataFlavorSupported(DataFlavor flavor) {
-            return "text/html".equals(flavor.getMimeType())
+            return "text/html" == flavor.getMimeType()
 
         }
 
