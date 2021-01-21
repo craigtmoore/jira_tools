@@ -12,7 +12,7 @@ import java.awt.datatransfer.Transferable
 import java.awt.datatransfer.UnsupportedFlavorException
 
 /**
- * Class for converting a Jenkins URL into html (or markdown) format and copying it to the clipboard which can
+ * Class for converting a Jenkins URL into html, jira, or markdown format and copying it to the clipboard which can
  * then be pasted into Jira or Teams or Bitbucket/GitHub.
  */
 class ConvertUrl {
@@ -26,6 +26,7 @@ class ConvertUrl {
         def cli = Util.getCliBuilder("${clazz.name} [options] url")
 
         cli.m(longOpt: 'markdown', 'Convert to Markdown format')
+        cli.j(longOpt: 'jira', 'Convert to Jira format')
 
         def options = cli.parse(args)
 
@@ -46,13 +47,25 @@ class ConvertUrl {
 
         if (options.markdown) {
 
-            def markdownText = getText(url, options.markdown)
+            def markdownText = getText(url, Format.MARKDOWN)
 
             Toolkit.defaultToolkit.systemClipboard.setContents(new StringSelection(markdownText), null)
 
-            LOG.info("Copied Markdown to clipboard")
+            LOG.debug(markdownText)
 
-        } else {
+            LOG.info("Copied Markdown Format to clipboard")
+
+        } else if (options.jira) {
+
+            def jiraText = getText(url, Format.JIRA)
+
+            Toolkit.defaultToolkit.systemClipboard.setContents(new StringSelection(jiraText), null)
+
+            LOG.debug(jiraText)
+
+            LOG.info("Copied JIRA Format to clipboard")
+
+        } else { // HTML
 
             def htmlText = getText(url)
 
@@ -63,8 +76,14 @@ class ConvertUrl {
         }
     }
 
+    static enum Format {
+        HTML,
+        MARKDOWN,
+        JIRA
+    }
 
-    static getText(String url, boolean isMarkdown = false) {
+
+    static getText(String url, Format format = Format.HTML) {
 
         LOG.debug("getHtml(url='$url')")
 
@@ -93,8 +112,10 @@ class ConvertUrl {
                 }
 
                 def link
-                if (isMarkdown) {
+                if (format == Format.MARKDOWN) {
                     link = "[$displayText](${runningUrl})"
+                } else if (format == Format.JIRA) {
+                    link = "[$displayText|$runningUrl]"
                 } else {
                     link = "<a href=\"${runningUrl}\">${displayText}</a>"
                 }
