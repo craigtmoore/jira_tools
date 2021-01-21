@@ -135,16 +135,16 @@ class ConvertUrl {
     }
 
     static class HtmlInputStreamTransferable implements Transferable {
-        private final DataFlavor _htmlDataFlavor
-        private final String _htmlText
+        private final DataFlavor htmlDataFlavor
+        private final String htmlText
 
         HtmlInputStreamTransferable(String htmlText) throws ClassNotFoundException {
-            _htmlText = htmlText
-            _htmlDataFlavor = new DataFlavor("text/html")
+            this.htmlText = htmlText
+            this.htmlDataFlavor = new DataFlavor("text/html")
         }
 
         DataFlavor[] getTransferDataFlavors() {
-            return [_htmlDataFlavor]
+            return [htmlDataFlavor]
         }
 
         boolean isDataFlavorSupported(DataFlavor flavor) {
@@ -153,7 +153,7 @@ class ConvertUrl {
         }
 
         Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
-            InputStream stringStream = new ByteArrayInputStream(_htmlText.getBytes("utf-8"))
+            InputStream stringStream = new ByteArrayInputStream(htmlText.getBytes("utf-8"))
             return stringStream
         }
     }
