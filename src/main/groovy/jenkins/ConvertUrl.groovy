@@ -30,7 +30,7 @@ class ConvertUrl {
 
         def options = cli.parse(args)
 
-        if (options.h || !options.arguments()) {
+        if (options.h) {
             cli.usage()
             return
         }
@@ -39,9 +39,28 @@ class ConvertUrl {
             Util.setLogLevel(clazz, Level.DEBUG)
         }
 
-        def url = options.arguments()[0]
-                .replace("//", "/")
-                .replace("http:/", "http://")
+        String url = Toolkit.defaultToolkit.systemClipboard.getData(DataFlavor.stringFlavor)
+        if (options.arguments().isEmpty()) {
+
+            LOG.debug("Copied value from clipboard '$url'")
+
+        } else {
+
+            url = options.arguments()[0]
+                    .replace("//", "/")
+                    .replace("http:/", "http://")
+
+        }
+
+        if (!url.startsWith("http")) {
+
+            throw new IllegalArgumentException("Missing 'http' from the URL '$url'")
+        }
+
+        if (!url.contains("job")) {
+
+            throw new IllegalArgumentException("Missing 'job' from the URL '$url'")
+        }
 
         LOG.debug("cleanUrl=$url")
 
