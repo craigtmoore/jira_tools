@@ -23,13 +23,13 @@ class UpdateIssueLists {
 
         bString = bString.replaceAll(" ", "")
 
-        def aList = Arrays.asList(aString.split(","))
+        def aList = aString.isEmpty() ? [] : Arrays.asList(aString.split(","))
         LOG.debug("aList.size() = ${aList.size()}")
 
         def aSet = new HashSet<>(aList)
         LOG.debug "aSet.size() = ${aSet.size()}"
 
-        def bList = Arrays.asList(bString.split(","))
+        def bList = bString.isEmpty() ? [] : Arrays.asList(bString.split(","))
         LOG.debug "bList.size() = ${bList.size()}"
 
         aSet.addAll(bList)

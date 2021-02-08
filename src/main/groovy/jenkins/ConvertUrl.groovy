@@ -52,6 +52,8 @@ class ConvertUrl {
 
         }
 
+        LOG.info(url)
+
         if (!url.startsWith("http")) {
 
             throw new IllegalArgumentException("Missing 'http' from the URL '$url'")
@@ -114,6 +116,8 @@ class ConvertUrl {
 
         def foundJob = false
 
+        def textFormat = ""
+
         addressArray.each {
 
             if (runningUrl) {
@@ -143,12 +147,20 @@ class ConvertUrl {
                     link = " > $link"
                 }
 
-                htmlFormat += "$link"
+                if (textFormat) {
+                    displayText = " > $displayText"
+                }
+
+                textFormat += displayText
+
+                htmlFormat += link
 
             } else if ("job" == it) {
                 foundJob = true
             }
         }
+
+        LOG.info(textFormat)
 
         return htmlFormat
     }
