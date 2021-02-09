@@ -47,12 +47,13 @@ class ConvertUrl {
         } else {
 
             url = options.arguments()[0]
-                    .replace("//", "/")
-                    .replace("http:/", "http://")
 
         }
 
         LOG.info(url)
+
+        url = url.replace("//", "/")
+                .replace("http:/", "http://")
 
         if (!url.startsWith("http")) {
 
@@ -106,7 +107,7 @@ class ConvertUrl {
 
     static getText(String url, Format format = Format.HTML) {
 
-        LOG.debug("getHtml(url='$url')")
+        LOG.debug("getText(url='$url', format='${format.name()}')")
 
         def addressArray = url.split("/")
 
