@@ -25,8 +25,10 @@ class ConvertUrl {
 
         def cli = Util.getCliBuilder("${clazz.name} [options] url")
 
+        cli.h(longOpt: 'help', 'Show this help information and exit')
         cli.m(longOpt: 'markdown', 'Convert to Markdown format')
         cli.j(longOpt: 'jira', 'Convert to Jira format')
+        cli.f(longOpt: 'file', args: 1, 'A file that contains a list of urls to convert')
 
         def options = cli.parse(args)
 
@@ -39,19 +41,128 @@ class ConvertUrl {
             Util.setLogLevel(clazz, Level.DEBUG)
         }
 
-        String url = Toolkit.defaultToolkit.systemClipboard.getData(DataFlavor.stringFlavor)
-        if (options.arguments().isEmpty()) {
+        File urlFile = options.f ? new File(options.f) : null
 
-            LOG.debug("Copied value from clipboard '$url'")
+        if (urlFile) {
+
+            boolean firstUrl = true
+
+            StringBuilder stringBuilder = new StringBuilder()
+
+            urlFile.eachLine { url ->
+
+                LOG.debug(url)
+
+                url = parseUrl(url)
+
+                LOG.debug("cleanUrl=$url")
+
+                if (options.markdown) {
+
+                    stringBuilder.append("* ").append(getText(url, Format.MARKDOWN)).append("\n")
+
+                } else if (options.jira) {
+
+                    stringBuilder.append("* ").append(getText(url, Format.JIRA)).append("\n")
+
+                } else { // HTML
+
+                    if (firstUrl) {
+                        stringBuilder.append("<ul>").append("\n")
+                        firstUrl = false
+                    }
+
+                    stringBuilder.append("<li>").append(getText(url, Format.HTML)).append("</li>").append("\n")
+                }
+
+            }
+
+            if (options.markdown) {
+
+                def markdownText = stringBuilder.toString()
+
+                Toolkit.defaultToolkit.systemClipboard.setContents(new StringSelection(markdownText), null)
+
+                LOG.debug(markdownText)
+
+                LOG.info("Copied Markdown Format to clipboard")
+
+            } else if (options.jira) {
+
+                def jiraText = stringBuilder.toString()
+
+                Toolkit.defaultToolkit.systemClipboard.setContents(new StringSelection(jiraText), null)
+
+                LOG.debug(jiraText)
+
+                LOG.info("Copied JIRA Format to clipboard")
+
+            } else { // HTML
+
+                stringBuilder.append("</ul>")
+
+                def htmlText = stringBuilder.toString()
+
+                Toolkit.defaultToolkit.systemClipboard.setContents(new HtmlInputStreamTransferable(htmlText), null)
+
+                LOG.debug(htmlText)
+
+                LOG.info("Copied HTML Format to clipboard")
+
+            }
 
         } else {
 
-            url = options.arguments()[0]
+            String url = Toolkit.defaultToolkit.systemClipboard.getData(DataFlavor.stringFlavor)
+            if (options.arguments().isEmpty()) {
 
+                LOG.debug("Copied value from clipboard '$url'")
+
+            } else {
+
+                url = options.arguments()[0]
+
+            }
+
+            LOG.info(url)
+
+            url = parseUrl(url)
+
+            LOG.debug("cleanUrl=$url")
+
+            if (options.markdown) {
+
+                def markdownText = getText(url, Format.MARKDOWN)
+
+                Toolkit.defaultToolkit.systemClipboard.setContents(new StringSelection(markdownText), null)
+
+                LOG.debug(markdownText)
+
+                LOG.info("Copied Markdown Format to clipboard")
+
+            } else if (options.jira) {
+
+                def jiraText = getText(url, Format.JIRA)
+
+                Toolkit.defaultToolkit.systemClipboard.setContents(new StringSelection(jiraText), null)
+
+                LOG.debug(jiraText)
+
+                LOG.info("Copied JIRA Format to clipboard")
+
+            } else { // HTML
+
+                def htmlText = getText(url, Format.HTML)
+
+                Toolkit.defaultToolkit.systemClipboard.setContents(new HtmlInputStreamTransferable(htmlText), null)
+
+                LOG.info("Copied HTML to clipboard")
+
+            }
         }
+    }
 
-        LOG.info(url)
-
+    static String parseUrl(String url) {
         url = url.replace("//", "/")
                 .replace("http:/", "http://")
 
@@ -65,37 +176,7 @@ class ConvertUrl {
             throw new IllegalArgumentException("Missing 'job' from the URL '$url'")
         }
 
-        LOG.debug("cleanUrl=$url")
-
-        if (options.markdown) {
-
-            def markdownText = getText(url, Format.MARKDOWN)
-
-            Toolkit.defaultToolkit.systemClipboard.setContents(new StringSelection(markdownText), null)
-
-            LOG.debug(markdownText)
-
-            LOG.info("Copied Markdown Format to clipboard")
-
-        } else if (options.jira) {
-
-            def jiraText = getText(url, Format.JIRA)
-
-            Toolkit.defaultToolkit.systemClipboard.setContents(new StringSelection(jiraText), null)
-
-            LOG.debug(jiraText)
-
-            LOG.info("Copied JIRA Format to clipboard")
-
-        } else { // HTML
-
-            def htmlText = getText(url)
-
-            Toolkit.defaultToolkit.systemClipboard.setContents(new HtmlInputStreamTransferable(htmlText), null)
-
-            LOG.info("Copied HTML to clipboard")
-
-        }
+        url
     }
 
     static enum Format {
@@ -105,7 +186,7 @@ class ConvertUrl {
     }
 
 
-    static getText(String url, Format format = Format.HTML) {
+    static getText(String url, Format format) {
 
         LOG.debug("getText(url='$url', format='${format.name()}')")
 
