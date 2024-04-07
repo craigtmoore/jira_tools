@@ -1,21 +1,22 @@
 plugins {
     id 'groovy'
-    id 'com.github.johnrengelman.shadow' version '5.1.0'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 group 'jira'
-version '0.0.0-SNAPSHOT'
+version '1.0.1'
 
 repositories {
     maven {
         url = uri('http://ei-nexus.agfahealthcare.com/repository/maven-public/')
+        allowInsecureProtocol=true
     }
 }
 
 dependencies {
-    compile 'org.codehaus.groovy:groovy-all:2.4.5'
-    compile 'ch.qos.logback:logback-classic:1.2.3'
-    compile 'commons-cli:commons-cli:1.4'
+    implementation 'org.codehaus.groovy:groovy-all:2.4.5'
+    implementation 'ch.qos.logback:logback-classic:1.2.3'
+    implementation 'commons-cli:commons-cli:1.4'
 
 }
 
@@ -24,11 +25,11 @@ shadowJar {
     mergeServiceFiles()
 }
 
-task copyJar(type: Copy, dependsOn: [shadowJar]) {
+tasks.register('copyJar', Copy) {
+    dependsOn shadowJar
     def fileName = "jira_tools-$version-all.jar"
     def filePath = "$buildDir/libs/" + fileName
     from filePath
     into "D:/dev/tools"
-
     rename fileName, "jira_tools.jar"
 }

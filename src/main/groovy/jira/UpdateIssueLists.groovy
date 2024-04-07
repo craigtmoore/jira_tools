@@ -10,7 +10,7 @@ import java.awt.datatransfer.Clipboard
 import java.awt.datatransfer.StringSelection
 
 /**
- * Class for taking too lists of jira issues merging them together, removing duplicates, and returning a jira query for
+ * Class for taking two lists of jira issues merging them together, removing duplicates, and returning a jira query for
  * the list of issues which is copied to the clipboard
  */
 class UpdateIssueLists {
@@ -61,6 +61,5 @@ class UpdateIssueLists {
 
         LOG.info "Coped jira query to clipboard"
         LOG.debug jiraQuery
-
     }
 }
